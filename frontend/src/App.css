@@ -1,0 +1,204 @@
+/* WA AI Guard - Dark Dashboard Theme */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #0a0a1a;
+  color: #e0e0e0;
+  overflow-x: hidden;
+}
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-content {
+  flex: 1;
+  margin-left: 260px;
+  padding: 24px;
+  transition: margin-left 0.3s;
+}
+
+@media (max-width: 768px) {
+  .app-content { margin-left: 0; padding: 16px; }
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #1a1a3e 0%, #12122a 100%);
+  border: 1px solid rgba(124, 77, 255, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+.stat-card:hover {
+  border-color: rgba(124, 77, 255, 0.5);
+  box-shadow: 0 4px 20px rgba(124, 77, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.log-table th {
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 2px solid rgba(124, 77, 255, 0.2);
+  color: #7c4dff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.log-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.9rem;
+}
+.log-table tr:hover {
+  background: rgba(124, 77, 255, 0.05);
+}
+
+.level-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.level-info { background: rgba(64, 196, 255, 0.15); color: #40c4ff; }
+.level-warning { background: rgba(255, 145, 0, 0.15); color: #ff9100; }
+.level-error { background: rgba(255, 23, 68, 0.15); color: #ff1744; }
+.level-debug { background: rgba(0, 230, 118, 0.15); color: #00e676; }
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 260px;
+  background: linear-gradient(180deg, #12122a 0%, #0a0a1a 100%);
+  border-right: 1px solid rgba(124, 77, 255, 0.1);
+  padding: 20px 0;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.sidebar-logo {
+  text-align: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(124, 77, 255, 0.1);
+  margin-bottom: 16px;
+}
+.sidebar-logo h2 {
+  color: #7c4dff;
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: 1px;
+}
+.sidebar-logo small {
+  color: rgba(255,255,255,0.4);
+  font-size: 0.75rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 24px;
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+}
+.nav-item:hover {
+  background: rgba(124, 77, 255, 0.08);
+  color: #e0e0e0;
+}
+.nav-item.active {
+  background: rgba(124, 77, 255, 0.12);
+  color: #7c4dff;
+  border-left-color: #7c4dff;
+}
+.nav-item .MuiSvgIcon-root {
+  margin-right: 12px;
+  font-size: 1.3rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #7c4dff, #00e5ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-card {
+  background: #12122a;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+}
+.status-dot.connected { background: #00e676; box-shadow: 0 0 8px rgba(0,230,118,0.5); }
+.status-dot.disconnected { background: #ff1744; box-shadow: 0 0 8px rgba(255,23,68,0.5); }
+.status-dot.pending { background: #ff9100; box-shadow: 0 0 8px rgba(255,145,0,0.5); }
+
+.code-block {
+  background: rgba(0,0,0,0.3);
+  padding: 12px;
+  border-radius: 8px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.85rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

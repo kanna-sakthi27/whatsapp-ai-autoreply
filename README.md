@@ -133,6 +133,43 @@ Edit `.env` file (copy from `.env.example`):
 
 ---
 
+
+## Frontend Dashboard
+
+The project now includes a modern React dashboard (Vite + MUI) with a dark Grafana/Datadog-style theme for managing your WhatsApp AI auto-reply system.
+
+### Access
+
+The dashboard is served on **port 8080** when running `docker-compose up -d`.
+
+### Features
+- **Dashboard**: Stats overview (messages today, blocked, AI replies, approval queue, active conversations, uptime)
+- **Messages**: Message history table with conversation view
+- **Send Message**: Send WhatsApp messages directly from the browser
+- **Approval Queue**: Review and approve/block messages held by guard rails
+- **AI Provider Config**: Switch between Ollama, OpenAI, Anthropic, Google, Groq, and more
+- **Guard Rails Config**: Toggle profanity filter, PII detection, topic blacklist, rate limiting, approval mode
+- **General Settings**: Configure WAHA base URL, max conversation history, default language, log level
+- **Log Viewer**: Searchable, filterable log viewer with auto-refresh and expandable details
+- **Connection Status**: WAHA connection health monitoring
+
+### Development
+
+```bash
+cd frontend
+npm install
+npm run dev  # Runs on port 5173 with hot reload, proxied to backend
+npm run build  # Production build to dist/
+```
+
+### Architecture
+
+The frontend is served by Nginx inside the Docker container and proxies:
+- `/api/*` → `ai-service:8000`
+- `/waha/*` → `waha:3000`
+
+All API requests from the browser go through the same domain (port 8080), avoiding CORS issues.
+
 ## License
 
 MIT License
