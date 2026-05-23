@@ -1,0 +1,98 @@
+version: "3.8"
+
+services:
+  # ============================================
+  # WhatsApp AI Auto-Reply - Main Services
+  # ============================================
+
+  # ---- Waha WhatsApp HTTP API ----
+  waha:
+    image: devlike/waha:latest
+    container_name: waha-whatsapp
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./waha_sessions:/app/sessions
+      - ./waha_media:/app/media
+    environment:
+      # WAHA Configuration
+      - WAHA_SESSION_NAME=default
+      - WAHA_WHATSAPP_ENGINE=WEBJS  # Alternatives: WEBJS, BAILEYS, WUZI
+      - WAHA_WEBSOCKET_ENABLED=true
+      - WAHA_API_KEY=change-me-to-a-secure-key  # Set in .env
+      - WAHA_WEBHOOK_URLS=http://ai-service:8000/webhook/message/raw
+      - WAHA_WEBHOOK_EVENTS=message
+      - WAHA_START_SESSION=true
+      - WAHA_SHOW_QR_CODE=true
+      - WAHA_QR_CODE_MAX_TRIES=10
+      - TZ=UTC
+    networks:
+      - whatsapp-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ---- AI Service (FastAPI Microservice with Guard Rails) ----
+  ai-service:
+    build:
+      context: ./ai_service
+      dockerfile: Dockerfile
+    container_name: waha-ai
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # AI Provider: "ollama" or "openai"
+      - AI_PROVIDER=ollama
+      # Ollama (runs on host or separate container)
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - OLLAMA_MODEL=llama3.2:1b
+      # OpenAI (optional - only if AI_PROVIDER=openai)
+      - OPENAI_API_KEY=
+      - OPENAI_MODEL=gpt-4o-mini
+      # AI Parameters
+      - AI_TEMPERATURE=0.7
+      - AI_MAX_TOKENS=150
+      - SYSTEM_PROMPT=You are a helpful WhatsApp assistant. Keep replies short, friendly and professional. Never share personal info. Never discuss restricted topics. If asked about something you cannot answer, politely decline.
+      # WAHA Connection
+      - WAHA_BASE_URL=http://waha:3000
+      - WHATSAPP_SESSION=default
+      # Guard Rails Configuration
+      - MAX_CHARS=500
+      - RATE_LIMIT_PER_MINUTE=10
+      - RATE_LIMIT_COOLDOWN=10.0
+      - APPROVAL_MODE=false
+    depends_on:
+      waha:
+        condition: service_healthy
+    networks:
+      - whatsapp-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ---- Ollama (optional - for local AI inference) ----
+  # Uncomment below to run Ollama as a Docker service
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: ollama
+  #   restart: unless-stopped
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ./ollama_data:/root/.ollama
+  #   networks:
+  #     - whatsapp-net
+
+networks:
+  whatsapp-net:
+    driver: bridge
