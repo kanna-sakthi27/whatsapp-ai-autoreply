@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # ============================================
   # WhatsApp AI Auto-Reply - Main Services
@@ -20,7 +18,7 @@ services:
       - WAHA_SESSION_NAME=default
       - WAHA_WHATSAPP_ENGINE=WEBJS  # Alternatives: WEBJS, BAILEYS, WUZI
       - WAHA_WEBSOCKET_ENABLED=true
-      - WAHA_API_KEY=change-me-to-a-secure-key  # Set in .env
+      - WAHA_API_KEY=waha-whatsapp-ai-secret-key-2026
       - WAHA_WEBHOOK_URLS=http://ai-service:8000/webhook/message/raw
       - WAHA_WEBHOOK_EVENTS=message
       - WAHA_START_SESSION=true
