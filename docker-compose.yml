@@ -28,7 +28,7 @@ services:
     networks:
       - whatsapp-net
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:3000/health -H "x-api-key: $WAHA_API_KEY""]
+      test: ["CMD-SHELL", "curl -sf http://localhost:3000/health -H \"x-api-key: $WAHA_API_KEY\""]
       interval: 15s
       timeout: 5s
       retries: 10
