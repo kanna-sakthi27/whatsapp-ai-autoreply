@@ -44,7 +44,7 @@ fi
 
 # --- Step 4: Pull WAHA image ---
 echo "[4/4] Pulling WAHA Docker image..."
-docker pull devlike/waha:latest
+docker pull devlikeapro/waha:latest
 echo "[4/4] ✓ WAHA image pulled"
 
 echo ""
