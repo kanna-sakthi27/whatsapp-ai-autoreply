@@ -388,9 +388,9 @@ async def send_whatsapp_message(phone: str, message: str) -> tuple[bool, Optiona
     try:
         url = f"{WAHA_BASE_URL.rstrip("/")}/api/sendText"
         headers = {"Content-Type": "application/json"}
-        api_key = os.getenv("WAHA_API_KEY", "")
-        if api_key:
-            headers["Authorization"] = f"Bearer {api_key}"
+        waha_api_key = os.getenv("WAHA_API_KEY", "waha-whatsapp-ai-secret-key-2026")
+        if waha_api_key:
+            headers["X-Api-Key"] = waha_api_key
         payload = {"session": WHATSAPP_SESSION, "chatId": phone, "text": message}
         async with httpx.AsyncClient(timeout=30.0) as client:
             resp = await client.post(url, json=payload, headers=headers)
@@ -725,8 +725,10 @@ async def clear_messages_route():
 async def get_whatsapp_status():
     """Get WAHA connection status."""
     try:
+        waha_api_key = os.getenv("WAHA_API_KEY", "waha-whatsapp-ai-secret-key-2026")
+        headers = {"X-Api-Key": waha_api_key}
         async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.get(f"{WAHA_BASE_URL.rstrip(chr(47))}/api/sessions/{WHATSAPP_SESSION}")
+            resp = await client.get(f"{WAHA_BASE_URL.rstrip(chr(47))}/api/sessions/{WHATSAPP_SESSION}", headers=headers)
             if resp.status_code == 200:
                 data = resp.json()
                 return {"status": "connected", "details": data}
