@@ -527,14 +527,14 @@ async def approve_item(data: ApproveRequest):
         success, err = await send_whatsapp_message(item["phone"], item["reply"])
         if success:
             message_history.add_message(item["phone"], item["phone"], "system", item["reply"], direction="outgoing", status="sent")
-            logs_store.add_log("info", "approval", f"Reply approved and sent to {item["phone"]}")
+            logs_store.add_log("info", "approval", f"Reply approved and sent to {item['phone']}")
             approval_queue.pop(data.index)
             return {"status": "approved", "action": "sent"}
         else:
             return {"status": "approved", "action": "send_failed", "error": err}
     else:
         item["status"] = "rejected"
-        logs_store.add_log("info", "approval", f"Reply rejected for {item["phone"]}")
+        logs_store.add_log("info", "approval", f"Reply rejected for {item['phone']}")
         approval_queue.pop(data.index)
         return {"status": "rejected"}
 
