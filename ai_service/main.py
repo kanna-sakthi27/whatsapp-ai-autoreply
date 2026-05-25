@@ -228,7 +228,7 @@ async def call_ai(prompt: str, conversation_history: list = None) -> tuple[Optio
 
 async def _call_ollama(base_url, model, prompt, system_prompt, conversation_history=None):
     """Call Ollama API for chat completion."""
-    url = f"{base_url.rstrip("/")}/api/chat"
+    url = f"{base_url.rstrip('/')}/api/chat"
     messages = [{"role": "system", "content": system_prompt}]
     if conversation_history:
         for msg in conversation_history[-10:]:
@@ -246,7 +246,7 @@ async def _call_ollama(base_url, model, prompt, system_prompt, conversation_hist
 
 
 async def _call_openai_compat(provider_name, base_url, model, api_key, prompt, system_prompt, conversation_history=None, temperature=0.7, max_tokens=300):
-    url = f"{base_url.rstrip("/")}/chat/completions"
+    url = f"{base_url.rstrip('/')}/chat/completions"
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     messages = [{"role": "system", "content": system_prompt}]
     if conversation_history:
@@ -265,7 +265,7 @@ async def _call_openai_compat(provider_name, base_url, model, api_key, prompt, s
 
 
 async def _call_anthropic(base_url, model, api_key, prompt, system_prompt, conversation_history=None, temperature=0.7, max_tokens=300):
-    url = f"{base_url.rstrip("/")}/messages"
+    url = f"{base_url.rstrip('/')}/messages"
     headers = {"x-api-key": api_key, "anthropic-version": "2023-06-01", "Content-Type": "application/json"}
     messages = []
     if conversation_history:
@@ -284,7 +284,7 @@ async def _call_anthropic(base_url, model, api_key, prompt, system_prompt, conve
 
 
 async def _call_google(base_url, model, api_key, prompt, system_prompt, conversation_history=None, temperature=0.7, max_tokens=300):
-    url = f"{base_url.rstrip("/")}/models/{model}:generateContent?key={api_key}"
+    url = f"{base_url.rstrip('/')}/models/{model}:generateContent?key={api_key}"
     contents = []
     if conversation_history:
         for msg in conversation_history[-10:]:
@@ -307,7 +307,7 @@ async def _call_google(base_url, model, api_key, prompt, system_prompt, conversa
 
 
 async def _call_cohere(base_url, model, api_key, prompt, system_prompt, conversation_history=None, temperature=0.7, max_tokens=300):
-    url = f"{base_url.rstrip("/")}/chat"
+    url = f"{base_url.rstrip('/')}/chat"
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     chat_history = []
     if conversation_history:
@@ -325,7 +325,7 @@ async def _call_cohere(base_url, model, api_key, prompt, system_prompt, conversa
 
 
 async def _call_mistral(base_url, model, api_key, prompt, system_prompt, conversation_history=None, temperature=0.7, max_tokens=300):
-    url = f"{base_url.rstrip("/")}/chat/completions"
+    url = f"{base_url.rstrip('/')}/chat/completions"
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     messages = [{"role": "system", "content": system_prompt}]
     if conversation_history:
@@ -386,7 +386,7 @@ async def call_ai_with_reply(phone: str, incoming_text: str, chat_history: list 
 async def send_whatsapp_message(phone: str, message: str) -> tuple[bool, Optional[str]]:
     """Send a WhatsApp message via WAHA API."""
     try:
-        url = f"{WAHA_BASE_URL.rstrip("/")}/api/sendText"
+        url = f"{WAHA_BASE_URL.rstrip('/')}/api/sendText"
         headers = {"Content-Type": "application/json"}
         waha_api_key = os.getenv("WAHA_API_KEY", "waha-whatsapp-ai-secret-key-2026")
         if waha_api_key:
@@ -728,7 +728,7 @@ async def get_whatsapp_status():
         waha_api_key = os.getenv("WAHA_API_KEY", "waha-whatsapp-ai-secret-key-2026")
         headers = {"X-Api-Key": waha_api_key}
         async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.get(f"{WAHA_BASE_URL.rstrip(chr(47))}/api/sessions/{WHATSAPP_SESSION}", headers=headers)
+            resp = await client.get(f"{WAHA_BASE_URL.rstrip('/')}/api/sessions/{WHATSAPP_SESSION}", headers=headers)
             if resp.status_code == 200:
                 data = resp.json()
                 return {"status": "connected", "details": data}
