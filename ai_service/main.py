@@ -470,9 +470,17 @@ async def process_webhook_payload(payload: dict):
             messages = [messages]
         for msg in messages:
             if isinstance(msg, dict):
-                text = msg.get("text", {}).get("text", msg.get("body", ""))
-                if isinstance(text, dict):
-                    text = text.get("text", "")
+                # WAHA v2 sends text as plain string "text": "Hello"
+                raw_text = msg.get("text", "")
+                if isinstance(raw_text, dict):
+                    text = raw_text.get("text", "")
+                elif isinstance(raw_text, str):
+                    text = raw_text
+                else:
+                    # Fallback to body field
+                    text = msg.get("body", "")
+                    if not isinstance(text, str):
+                        text = str(text) if text else ""
                 chat_id = msg.get("from", msg.get("chatId", "unknown"))
                 from_me = msg.get("fromMe", False)
                 if not from_me and str(text).strip() and chat_id != "unknown":
