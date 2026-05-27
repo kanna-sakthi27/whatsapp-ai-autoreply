@@ -746,11 +746,11 @@ async def get_whatsapp_status():
             resp = await client.get(f"{WAHA_BASE_URL.rstrip('/')}/api/sessions/{WHATSAPP_SESSION}", headers=headers)
             if resp.status_code == 200:
                 data = resp.json()
-                return {"status": "connected", "details": data}
+                return {"connected": True, "status": "connected", "details": data}
             else:
-                return {"status": "disconnected", "code": resp.status_code, "message": resp.text}
+                return {"connected": False, "status": "disconnected", "code": resp.status_code, "message": resp.text}
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        return {"connected": False, "status": "error", "message": str(e)}
 
 
 # 12. Dashboard Stats
