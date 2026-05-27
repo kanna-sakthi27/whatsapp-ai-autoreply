@@ -465,7 +465,14 @@ async def webhook_alt(request: Request):
 async def process_webhook_payload(payload: dict):
     """Process a single webhook payload."""
     try:
-        messages = payload.get("messages", [payload.get("message", payload)])
+        # WAHA v2 sends webhook events wrapped in a "payload" key:
+        # {"event": "message", "session": "...", "payload": {"from": "...", "text": "Hello", "fromMe": false}}
+        # Extract the inner payload first
+        inner = payload.get("payload", payload)
+        if not isinstance(inner, dict):
+            inner = payload
+        
+        messages = inner.get("messages", [inner.get("message", inner)])
         if not isinstance(messages, list):
             messages = [messages]
         for msg in messages:
