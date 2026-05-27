@@ -39,7 +39,7 @@ def _init_db(conn: sqlite3.Connection):
     conn.commit()
 
 
-def add_message(phone: str, content: str, direction: str, status: str = "sent", from_phone: str = None, to_phone: str = None, metadata: dict = None):
+def add_message(phone: str, content: str, direction: str, status: str = "sent", from_phone: str = None, to_phone: str = None, metadata: dict = None, sender: str = None):
     try:
         conn = _get_conn()
         conn.execute("INSERT INTO messages (phone, from_phone, to_phone, content, timestamp, direction, status, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",

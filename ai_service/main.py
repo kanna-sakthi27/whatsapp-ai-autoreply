@@ -348,9 +348,9 @@ async def call_ai_with_reply(phone: str, incoming_text: str, chat_history: list 
     pre_result = guard.pre_filter(incoming_text)
     if pre_result:
         logs_store.add_log("warning", "guard_rails", f"Message blocked: {pre_result}", details={"phone": phone, "text": incoming_text[:200]})
-        message_history.add_message(phone, phone, "system", incoming_text, direction="incoming", status="blocked")
+        message_history.add_message(phone, incoming_text, direction="incoming", status="blocked", sender="system")
         return False, pre_result
-    message_history.add_message(phone, phone, "system", incoming_text, direction="incoming", status="received")
+    message_history.add_message(phone, incoming_text, direction="incoming", status="received", sender="system")
     logs_store.add_log("info", "message", f"Incoming message from {phone}", details={"text": incoming_text[:200]})
     reply_text, error = await call_ai(incoming_text, chat_history)
     if error:
@@ -359,7 +359,7 @@ async def call_ai_with_reply(phone: str, incoming_text: str, chat_history: list 
     post_result = guard.post_filter(reply_text)
     if post_result:
         logs_store.add_log("warning", "guard_rails", f"AI reply blocked: {post_result}", details={"phone": phone, "reply": reply_text[:200]})
-        message_history.add_message(phone, phone, "system", reply_text, direction="outgoing", status="blocked")
+        message_history.add_message(phone, reply_text, direction="outgoing", status="blocked", sender="system")
         return False, post_result
     if guard.approval_mode:
         approval_queue.append({
@@ -370,16 +370,16 @@ async def call_ai_with_reply(phone: str, incoming_text: str, chat_history: list 
             "status": "pending"
         })
         logs_store.add_log("info", "approval", f"Reply queued for approval: {phone}")
-        message_history.add_message(phone, phone, "system", reply_text, direction="outgoing", status="pending")
+        message_history.add_message(phone, reply_text, direction="outgoing", status="pending", sender="system")
         return True, "queued_for_approval"
     success, err = await send_whatsapp_message(phone, reply_text)
     if success:
-        message_history.add_message(phone, phone, "system", reply_text, direction="outgoing", status="sent")
+        message_history.add_message(phone, reply_text, direction="outgoing", status="sent", sender="system")
         logs_store.add_log("info", "message", f"Reply sent to {phone}")
         return True, reply_text
     else:
         logs_store.add_log("error", "waha", f"Failed to send reply to {phone}: {err}")
-        message_history.add_message(phone, phone, "system", reply_text, direction="outgoing", status="failed")
+        message_history.add_message(phone, reply_text, direction="outgoing", status="failed", sender="system")
         return False, err
 
 
@@ -492,7 +492,7 @@ async def send_message(data: SendMessageRequest):
         raise HTTPException(status_code=400, detail="Message cannot be empty")
     success, err = await send_whatsapp_message(data.phone, data.message)
     if success:
-        message_history.add_message(data.phone, data.phone, "system", data.message, direction="outgoing", status="sent")
+        message_history.add_message(data.phone, data.message, direction="outgoing", status="sent", sender="system")
         logs_store.add_log("info", "message", f"Manual message sent to {data.phone}")
         return {"status": "sent"}
     else:
@@ -526,7 +526,7 @@ async def approve_item(data: ApproveRequest):
         item["status"] = "approved"
         success, err = await send_whatsapp_message(item["phone"], item["reply"])
         if success:
-            message_history.add_message(item["phone"], item["phone"], "system", item["reply"], direction="outgoing", status="sent")
+            message_history.add_message(item["phone"], item["reply"], direction="outgoing", status="sent", sender="system")
             logs_store.add_log("info", "approval", f"Reply approved and sent to {item['phone']}")
             approval_queue.pop(data.index)
             return {"status": "approved", "action": "sent"}
