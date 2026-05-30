@@ -429,15 +429,19 @@ async def health_check():
 async def webhook_raw(request: Request):
     """Primary WAHA webhook endpoint."""
     try:
+        raw_body = await request.body()
+        logger.info(f"[WEBHOOK RAW] Received payload: {raw_body[:2000]}")
         payload = await request.json()
+        logger.info(f"[WEBHOOK RAW] Parsed JSON: keys={list(payload.keys())}")
         if isinstance(payload, list):
+            logger.info(f"[WEBHOOK RAW] Received list of {len(payload)} items")
             for item in payload:
                 asyncio.create_task(process_webhook_payload(item))
         else:
             asyncio.create_task(process_webhook_payload(payload))
         return {"status": "ok"}
     except Exception as e:
-        logger.error(f"Webhook error: {e}")
+        logger.error(f"[WEBHOOK RAW] Error: {e}")
         return {"status": "error"}
 
 
@@ -490,8 +494,12 @@ async def process_webhook_payload(payload: dict):
                         text = str(text) if text else ""
                 chat_id = msg.get("from", msg.get("chatId", "unknown"))
                 from_me = msg.get("fromMe", False)
+                logger.info(f"[PROCESS MSG] chat_id={chat_id}, from_me={from_me}, text='{str(text)[:100]}'")
                 if not from_me and str(text).strip() and chat_id != "unknown":
+                    logger.info(f"[PROCESS MSG] ✅ Triggering AI reply for {chat_id}: '{str(text)[:100]}'")
                     asyncio.create_task(call_ai_with_reply(chat_id, str(text)))
+                else:
+                    logger.info(f"[PROCESS MSG] ❌ Skipping - from_me={from_me}, text_empty={not str(text).strip()}, chat_unknown={chat_id == 'unknown'}")
     except Exception as e:
         logger.error(f"Payload processing error: {e}")
 
