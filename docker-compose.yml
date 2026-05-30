@@ -19,6 +19,8 @@ services:
       - WAHA_WHATSAPP_ENGINE=WEBJS  # Alternatives: WEBJS, BAILEYS, WUZI
       - WAHA_WEBSOCKET_ENABLED=true
       - WAHA_API_KEY=waha-whatsapp-ai-secret-key-2026
+- WAHA_DASHBOARD_USERNAME=admin
+- WAHA_DASHBOARD_PASSWORD=admin123
       - WAHA_WEBHOOK_URLS=http://ai-service:8000/webhook/message/raw
       - WAHA_WEBHOOK_EVENTS=message
       - WAHA_START_SESSION=true
