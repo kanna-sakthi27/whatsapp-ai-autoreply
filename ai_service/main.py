@@ -344,7 +344,7 @@ async def _call_mistral(base_url, model, api_key, prompt, system_prompt, convers
 
 
 async def call_ai_with_reply(phone: str, incoming_text: str, chat_history: list = None):
-    """Generate an AI reply for an incoming message."""
+    """Generate an AI reply for an incoming message with conversation context."""
     pre_result = guard.pre_filter(incoming_text)
     if pre_result:
         logs_store.add_log("warning", "guard_rails", f"Message blocked: {pre_result}", details={"phone": phone, "text": incoming_text[:200]})
@@ -352,7 +352,23 @@ async def call_ai_with_reply(phone: str, incoming_text: str, chat_history: list 
         return False, pre_result
     message_history.add_message(phone, incoming_text, direction="incoming", status="received", sender="system")
     logs_store.add_log("info", "message", f"Incoming message from {phone}", details={"text": incoming_text[:200]})
-    reply_text, error = await call_ai(incoming_text, chat_history)
+    
+    # Fetch conversation history and build context (async, non-blocking)
+    try:
+        conversation_context = await build_conversation_context(phone, incoming_text, limit=30)
+        if conversation_context:
+            # Inject context into the AI prompt
+            enhanced_prompt = f"""{conversation_context}
+
+New message from user: {incoming_text}"""
+            logs_store.add_log("info", "ai_service", f"Using conversation context ({len(conversation_context)} chars) for {phone}")
+        else:
+            enhanced_prompt = incoming_text
+    except Exception as e:
+        logger.warning(f"Failed to build conversation context: {e}")
+        enhanced_prompt = incoming_text
+    
+    reply_text, error = await call_ai(enhanced_prompt, chat_history)
     if error:
         logs_store.add_log("error", "ai_service", f"AI reply failed for {phone}: {error}")
         return False, error
@@ -406,6 +422,16 @@ async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
     logger.info("WhatsApp AI Service starting...")
     logs_store.add_log("info", "system", "Service started");
+    
+    # Register webhook with WAHA to ensure incoming messages are forwarded
+    logger.info("[STARTUP] Registering webhook with WAHA...")
+    for attempt in range(5):
+        success = await register_webhook_with_waha()
+        if success:
+            break
+        await asyncio.sleep(5)
+        logger.info(f"[STARTUP] Retrying webhook registration (attempt {attempt + 2})...")
+    
     yield
     logger.info("WhatsApp AI Service shutting down...");
 
@@ -523,6 +549,7 @@ async def send_message(data: SendMessageRequest):
 
 
 # 4. Guard Queue / Approval
+@app.get("/api/guard-queue")
 @app.get("/guard-queue")
 async def get_guard_queue():
     """Get all items pending approval."""
@@ -539,6 +566,7 @@ async def get_guard_queue():
     return {"queue": result, "count": len(result)}
 
 
+@app.post("/api/guard-queue/approve")
 @app.post("/guard-queue/approve")
 async def approve_item(data: ApproveRequest):
     """Approve or reject a queued message."""
@@ -710,7 +738,19 @@ async def clear_logs():
 @app.get("/api/logs/stats")
 async def get_log_stats():
     """Get log statistics."""
-    return logs_store.get_log_stats()
+    try:
+        stats = logs_store.get_log_stats()
+        # Ensure all values are JSON-serializable
+        return {
+            "total_logs": int(stats.get("total_logs", 0)),
+            "last_24h_count": int(stats.get("last_24h_count", 0)),
+            "by_level": {str(k): int(v) for k, v in stats.get("by_level", {}).items()},
+            "by_source": {str(k): int(v) for k, v in stats.get("by_source", {}).items()},
+            "unique_sources": list(stats.get("unique_sources", [])),
+        }
+    except Exception as e:
+        logger.error(f"[STATS ERROR] Failed to get log stats: {e}", exc_info=True)
+        return {"total_logs": 0, "last_24h_count": 0, "by_level": {}, "by_source": {}, "unique_sources": []}
 
 
 # 10. Messages
